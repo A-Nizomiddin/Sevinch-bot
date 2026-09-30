@@ -40,7 +40,7 @@ async def safe_delete(message):
 
 
 async def on_check(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик ответил ✅ на сообщение «+1 ...» -> бот напоминает про смену."""
+    """Обработчик ответил ✅ на «+1 ...» -> бот отвечает автору +1 и напоминает про смену."""
     msg = update.effective_message
     origin = msg.reply_to_message
     if not origin:
@@ -58,14 +58,14 @@ async def on_check(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     done.add(key)
 
-    uid = msg.from_user.id
+    uid = origin.from_user.id  # кнопки для того, кто написал +1
     keyboard = InlineKeyboardMarkup(
         [[
             InlineKeyboardButton("✅ Назначили", callback_data=f"shift:ok:{uid}"),
             InlineKeyboardButton("❌ Не назначили", callback_data=f"shift:no:{uid}"),
         ]]
     )
-    sent = await msg.reply_text(REMINDER_TEXT, reply_markup=keyboard)
+    sent = await origin.reply_text(REMINDER_TEXT, reply_markup=keyboard)  # ответ автору +1
     context.bot_data.setdefault("origin_text", {})[(sent.chat_id, sent.message_id)] = origin_text
 
 
@@ -73,7 +73,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     _, action, author_id = query.data.split(":")
 
-    # Нажимать может только тот, кто поставил ✅
+    # Нажимать может только тот, кто написал +1
     if query.from_user.id != int(author_id):
         await query.answer("Эта кнопка не для вас 🙂", show_alert=True)
         return
@@ -87,7 +87,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
             ADMIN_CHAT_ID,
             f"❌ Смена не назначена\nГруппа: {query.message.chat.title}\n"
-            f"Обработал: {user_name(query.from_user)}\nЗаявка: {origin_text}",
+            f"От: {user_name(query.from_user)}\nЗаявка: {origin_text}",
         )
 
     await safe_delete(query.message)
