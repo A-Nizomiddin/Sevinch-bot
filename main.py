@@ -86,7 +86,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if action == "no" and ADMIN_CHAT_ID:
         await context.bot.send_message(
             ADMIN_CHAT_ID,
-            f"❌ Смена не назначена\nГруппа: {query.message.chat.title}\n"
+            f"❌ Пожалуйста, ребята, свяжитесь с курьером и поставьте ему смену\nГруппа: {query.message.chat.title}\n"
             f"От: {user_name(query.from_user)}\nЗаявка: {origin_text}",
         )
 
